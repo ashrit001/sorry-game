@@ -200,7 +200,7 @@ export default class JigsawScene extends Phaser.Scene {
   private onComplete() {
     const { width, height } = this.scale;
 
-    const text = this.add.text(
+    this.add.text(
       width / 2,
       height - 100,
       "❤️",
@@ -217,7 +217,7 @@ export default class JigsawScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .setOrigin(0.5);
 
-    const btnText = this.add
+    this.add
       .text(width / 2, height - 50, "Play Next ▶", {
         fontSize: "18px",
         color: "#ffffff",

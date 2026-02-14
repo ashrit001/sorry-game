@@ -2,7 +2,7 @@ import Phaser from "phaser";
 
 export default class TomatoScene extends Phaser.Scene {
   private tomato!: Phaser.Physics.Arcade.Image;
-  private target!: Phaser.Physics.Arcade.StaticImage;
+  private target!: Phaser.Physics.Arcade.Image;
   private scoreText!: Phaser.GameObjects.Text;
 
   private score = 0;
@@ -64,7 +64,7 @@ export default class TomatoScene extends Phaser.Scene {
     this.tomato.setDisplaySize(48, 48);
     this.tomato.setBounce(0.3);
     this.tomato.setCollideWorldBounds(true);
-    this.tomato.body.onWorldBounds = true;
+    
 
     // 🌍 WORLD BOUNDS
     this.physics.world.on("worldbounds", this.onWorldBoundsHit, this);
@@ -82,7 +82,7 @@ export default class TomatoScene extends Phaser.Scene {
     this.input.on("pointerdown", this.throwTomato, this);
   }
 
-  update(_, delta: number) {
+  update(_time: number, delta: number) {
     if (this.gameWon) return;
 
     // 🎯 MOVE TARGET
@@ -164,7 +164,7 @@ export default class TomatoScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
 
-    const btnText = this.add
+    this.add
       .text(width / 2, height / 2 + 40, "Play Next ▶", {
         fontSize: "20px",
         color: "#ffffff",

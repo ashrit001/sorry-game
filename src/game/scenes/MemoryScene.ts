@@ -192,7 +192,7 @@ export default class MemoryScene extends Phaser.Scene {
   private onComplete() {
     const { width, height } = this.scale;
 
-    const completeText = this.add.text(
+    this.add.text(
       width / 2,
       height - 100,
       "❤️",
@@ -209,7 +209,7 @@ export default class MemoryScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .setOrigin(0.5);
 
-    const buttonText = this.add
+    this.add
       .text(width / 2, height - 50, "Play Next ▶", {
         fontSize: "18px",
         color: "#ffffff",
