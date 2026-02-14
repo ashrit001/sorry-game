@@ -52,11 +52,11 @@ export default class TomatoScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setVisible(false);
 
-    // 🎯 TARGET (STATIC IMAGE, MOVED MANUALLY)
-    this.target = this.physics.add.image(width / 2, 140, "target");
-    this.target.setImmovable(true);
-    this.target.body.allowGravity = false;
-    this.target.setDisplaySize(180, 180);
+    // 🎯 TARGET (STATIC — NO GRAVITY EVER)
+this.target = this.physics.add.staticImage(width / 2, 140, "target");
+this.target.setDisplaySize(180, 180);
+
+
 
     // 🍅 TOMATO
     this.tomato = this.physics.add.image(width / 2, height - 100, "tomato");
