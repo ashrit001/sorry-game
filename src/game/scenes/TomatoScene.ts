@@ -4,13 +4,12 @@ export default class TomatoScene extends Phaser.Scene {
   private tomato!: Phaser.Physics.Arcade.Image;
   private target!: Phaser.Physics.Arcade.Image;
   private scoreText!: Phaser.GameObjects.Text;
+  private winText!: Phaser.GameObjects.Text;
 
   private score = 0;
   private canThrow = true;
-  private targetDirection = 1;
-
-  private winText!: Phaser.GameObjects.Text;
   private gameWon = false;
+  private targetDirection = 1;
 
   constructor() {
     super("TomatoScene");
@@ -34,7 +33,7 @@ export default class TomatoScene extends Phaser.Scene {
     );
     bg.fillRect(0, 0, width, height);
 
-    // 🏆 SCORE
+    // 🏆 SCORE TEXT
     this.scoreText = this.add
       .text(width / 2, 30, "Score: 0", {
         fontSize: "28px",
@@ -43,7 +42,7 @@ export default class TomatoScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // 🎉 WIN TEXT (hidden)
+    // 🎉 WIN TEXT (hidden initially)
     this.winText = this.add
       .text(width / 2, height / 2 - 40, "You Win ❤️", {
         fontSize: "40px",
@@ -51,23 +50,18 @@ export default class TomatoScene extends Phaser.Scene {
         fontStyle: "bold",
       })
       .setOrigin(0.5)
-      .setDepth(10)
       .setVisible(false);
 
-    // 🎯 TARGET
-    this.target = this.physics.add.staticImage(width / 2, 140, "target");
+    // 🎯 TARGET (STATIC IMAGE, MOVED MANUALLY)
+    this.target = this.physics.add.image(width / 2, 140, "target");
+    this.target.setImmovable(true);
+    this.target.body.allowGravity = false;
     this.target.setDisplaySize(180, 180);
-    this.target.refreshBody();
 
     // 🍅 TOMATO
     this.tomato = this.physics.add.image(width / 2, height - 100, "tomato");
     this.tomato.setDisplaySize(48, 48);
     this.tomato.setBounce(0.3);
-    this.tomato.setCollideWorldBounds(true);
-    
-
-    // 🌍 WORLD BOUNDS
-    this.physics.world.on("worldbounds", this.onWorldBoundsHit, this);
 
     // 💥 COLLISION
     this.physics.add.collider(
@@ -78,25 +72,33 @@ export default class TomatoScene extends Phaser.Scene {
       this
     );
 
-    // 👉 THROW
+    // 👉 CLICK / TOUCH TO THROW
     this.input.on("pointerdown", this.throwTomato, this);
   }
 
   update(_time: number, delta: number) {
-    if (this.gameWon) return;
+    if (!this.gameWon) {
+      // 🎯 MOVE TARGET LEFT ↔ RIGHT
+      const speed = 0.12 * delta;
+      this.target.x += speed * this.targetDirection;
 
-    // 🎯 MOVE TARGET
-    const speed = 0.12 * delta;
-    this.target.x += speed * this.targetDirection;
-
-    const margin = 90;
-    if (this.target.x > this.scale.width - margin) {
-      this.targetDirection = -1;
-    } else if (this.target.x < margin) {
-      this.targetDirection = 1;
+      const margin = 90;
+      if (this.target.x > this.scale.width - margin) {
+        this.targetDirection = -1;
+      } else if (this.target.x < margin) {
+        this.targetDirection = 1;
+      }
     }
 
-    this.target.refreshBody();
+    // 🍅 RESET TOMATO IF IT MISSES (TOP OR BOTTOM)
+    if (!this.canThrow) {
+      if (
+        this.tomato.y > this.scale.height + 40 ||
+        this.tomato.y < -40
+      ) {
+        this.resetTomato();
+      }
+    }
   }
 
   private throwTomato(pointer: Phaser.Input.Pointer) {
@@ -108,6 +110,8 @@ export default class TomatoScene extends Phaser.Scene {
     const dy = pointer.y - this.tomato.y;
 
     const length = Math.sqrt(dx * dx + dy * dy);
+    if (length === 0) return;
+
     const nx = dx / length;
     const ny = dy / length;
 
@@ -126,7 +130,7 @@ export default class TomatoScene extends Phaser.Scene {
     this.score++;
     this.scoreText.setText(`Score: ${this.score}`);
 
-    if (this.score >= 1) {
+    if (this.score >= 10) {
       this.onWin();
       return;
     }
@@ -144,7 +148,6 @@ export default class TomatoScene extends Phaser.Scene {
     this.tomato.setAngularVelocity(0);
     this.targetDirection = 0;
 
-    // 🎉 Win animation
     this.tweens.add({
       targets: this.winText,
       scale: { from: 0.8, to: 1 },
@@ -164,30 +167,20 @@ export default class TomatoScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
 
-    this.add
-      .text(width / 2, height / 2 + 40, "Play Next ▶", {
+    this.add.text(
+      width / 2,
+      height / 2 + 40,
+      "Play Next ▶",
+      {
         fontSize: "20px",
         color: "#ffffff",
         fontStyle: "bold",
-      })
-      .setOrigin(0.5);
+      }
+    ).setOrigin(0.5);
 
     btnBg.on("pointerdown", () => {
       this.scene.start("ValentineScene");
     });
-  }
-
-  // 🚫 HIT TOP / BOTTOM
-  private onWorldBoundsHit(
-    body: Phaser.Physics.Arcade.Body,
-    up: boolean,
-    down: boolean
-  ) {
-    if (body.gameObject !== this.tomato || this.gameWon) return;
-
-    if (up || down) {
-      this.resetTomato();
-    }
   }
 
   private resetTomato() {
